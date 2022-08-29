@@ -1,0 +1,298 @@
+Resources:
+  medmocards4DF08C1C:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-cards-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: S3BucketsStack/medmo-cards/Resource
+  medmocxtask705ADB8E:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-cx-task-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: S3BucketsStack/medmo-cx-task/Resource
+  medmomfplogos8834616A:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-mfp-logos-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: S3BucketsStack/medmo-mfp-logos/Resource
+  medmorequestsnotesA40DBEB8:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-requests-notes-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: S3BucketsStack/medmo-requests-notes/Resource
+  medmorequestsrx60B44C0F:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-requests-rx-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: S3BucketsStack/medmo-requests-rx/Resource
+  medmoscanreports74753175:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-scan-reports-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: S3BucketsStack/medmo-scan-reports/Resource
+  medmotasksE526B92C:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-tasks-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: S3BucketsStack/medmo-tasks/Resource
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/yWLSw7CMAwFz9J96mKBYIvoDcoJKsdIaUQsxU5ZRLk7/axmpHkPAe8Il+45/7QnH4dKkhnq22aKbpSklguZGz9pYpWSiXffgg8WJDW3H/UK9VUo8jE8rTWXxDMsOqx4A3wAdouG0OeSLHwZppN/XeDGM4IAAAA=
+    Metadata:
+      aws:cdk:path: S3BucketsStack/CDKMetadata/Default
+    Condition: CDKMetadataAvailable
+Conditions:
+  CDKMetadataAvailable:
+    Fn::Or:
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - af-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ca-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-northwest-1
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-3
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - me-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - sa-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-2
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-2
+

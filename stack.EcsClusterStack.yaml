@@ -1,0 +1,1279 @@
+Resources:
+  ecrRepositoryF10F8231:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: api
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecrRepository/Resource
+  ecsCluster15812518:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: api
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsCluster/Resource
+  ecsTaskDefinitionTaskRole9CE8F455:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsTaskDefinition/TaskRole/Resource
+  ecsTaskDefinitionTaskRoleDefaultPolicy680D6DD0:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - logs:CreateLogStream
+              - logs:DescribeLogGroups
+              - logs:DescribeLogStreams
+              - logs:PutLogEvents
+              - ssmmessages:CreateControlChannel
+              - ssmmessages:CreateDataChannel
+              - ssmmessages:OpenControlChannel
+              - ssmmessages:OpenDataChannel
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: ecsTaskDefinitionTaskRoleDefaultPolicy680D6DD0
+      Roles:
+        - Ref: ecsTaskDefinitionTaskRole9CE8F455
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsTaskDefinition/TaskRole/DefaultPolicy/Resource
+  ecsTaskDefinitionA83D1593:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      ContainerDefinitions:
+        - Cpu: 256
+          Essential: true
+          Image:
+            Fn::Join:
+              - ""
+              - - Fn::Select:
+                    - 4
+                    - Fn::Split:
+                        - ":"
+                        - Fn::GetAtt:
+                            - ecrRepositoryF10F8231
+                            - Arn
+                - .dkr.ecr.
+                - Fn::Select:
+                    - 3
+                    - Fn::Split:
+                        - ":"
+                        - Fn::GetAtt:
+                            - ecrRepositoryF10F8231
+                            - Arn
+                - "."
+                - Ref: AWS::URLSuffix
+                - /
+                - Ref: ecrRepositoryF10F8231
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group:
+                Ref: ecsTaskDefinitionecsContainerDefinitionLogGroup2A2C7B84
+              awslogs-stream-prefix: api
+              awslogs-region:
+                Ref: AWS::Region
+          Memory: 512
+          Name: api
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 80
+              Protocol: tcp
+      Cpu: "256"
+      ExecutionRoleArn:
+        Fn::GetAtt:
+          - ecsTaskDefinitionExecutionRoleE4BD8051
+          - Arn
+      Family: EcsClusterStackecsTaskDefinitionCA86E781
+      Memory: "512"
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      TaskRoleArn:
+        Fn::GetAtt:
+          - ecsTaskDefinitionTaskRole9CE8F455
+          - Arn
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsTaskDefinition/Resource
+  ecsTaskDefinitionecsContainerDefinitionLogGroup2A2C7B84:
+    Type: AWS::Logs::LogGroup
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsTaskDefinition/ecsContainerDefinition/LogGroup/Resource
+  ecsTaskDefinitionExecutionRoleE4BD8051:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsTaskDefinition/ExecutionRole/Resource
+  ecsTaskDefinitionExecutionRoleDefaultPolicy9F67C3E5:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ecr:BatchCheckLayerAvailability
+              - ecr:BatchGetImage
+              - ecr:GetDownloadUrlForLayer
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ecrRepositoryF10F8231
+                - Arn
+          - Action: ecr:GetAuthorizationToken
+            Effect: Allow
+            Resource: "*"
+          - Action:
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - ecsTaskDefinitionecsContainerDefinitionLogGroup2A2C7B84
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: ecsTaskDefinitionExecutionRoleDefaultPolicy9F67C3E5
+      Roles:
+        - Ref: ecsTaskDefinitionExecutionRoleE4BD8051
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsTaskDefinition/ExecutionRole/DefaultPolicy/Resource
+  ecsFargateService9045BECE:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        Ref: ecsCluster15812518
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 50
+      EnableECSManagedTags: false
+      EnableExecuteCommand: true
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: FARGATE
+      LoadBalancers:
+        - ContainerName: api
+          ContainerPort: 80
+          TargetGroupArn:
+            Fn::ImportValue: VpcStack:ExportsOutputRefalbalbListeneralbTargetGroupGroup10D51A311ADE4F55
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: DISABLED
+          SecurityGroups:
+            - Fn::GetAtt:
+                - ecsFargateServiceSecurityGroup4230626E
+                - GroupId
+          Subnets:
+            - Fn::ImportValue: VpcStack:ExportsOutputRefvpcPrivateSubnet1Subnet934893E8236E2271
+            - Fn::ImportValue: VpcStack:ExportsOutputRefvpcPrivateSubnet2Subnet7031C2BA60DCB1EE
+      TaskDefinition:
+        Ref: ecsTaskDefinitionA83D1593
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsFargateService/Service
+  ecsFargateServiceSecurityGroup4230626E:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: EcsClusterStack/ecsFargateService/SecurityGroup
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      VpcId:
+        Fn::ImportValue: VpcStack:ExportsOutputRefvpcA2121C384D1B3CDE
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsFargateService/SecurityGroup/Resource
+  ecsFargateServiceSecurityGroupfromVpcStackalbSecurityGroup1179355B80AC034297:
+    Type: AWS::EC2::SecurityGroupIngress
+    Properties:
+      IpProtocol: tcp
+      Description: Load balancer to target
+      FromPort: 80
+      GroupId:
+        Fn::GetAtt:
+          - ecsFargateServiceSecurityGroup4230626E
+          - GroupId
+      SourceSecurityGroupId:
+        Fn::ImportValue: VpcStack:ExportsOutputFnGetAttalbSecurityGroup49866104GroupIdD5B19856
+      ToPort: 80
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsFargateService/SecurityGroup/from VpcStackalbSecurityGroup1179355B:80
+  ecsFargateServiceSecurityGroupVpcStackalbSecurityGroup1179355B80fromA3FFBEAB:
+    Type: AWS::EC2::SecurityGroupEgress
+    Properties:
+      GroupId:
+        Fn::ImportValue: VpcStack:ExportsOutputFnGetAttalbSecurityGroup49866104GroupIdD5B19856
+      IpProtocol: tcp
+      Description: Load balancer to target
+      DestinationSecurityGroupId:
+        Fn::GetAtt:
+          - ecsFargateServiceSecurityGroup4230626E
+          - GroupId
+      FromPort: 80
+      ToPort: 80
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsFargateService/SecurityGroup/VpcStackalbSecurityGroup1179355B:80 from
+  ecsFargateServiceTaskCountTargetB6FAE0B3:
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MaxCapacity: 10
+      MinCapacity: 1
+      ResourceId:
+        Fn::Join:
+          - ""
+          - - service/
+            - Ref: ecsCluster15812518
+            - /
+            - Fn::GetAtt:
+                - ecsFargateService9045BECE
+                - Name
+      RoleARN:
+        Fn::Join:
+          - ""
+          - - "arn:"
+            - Ref: AWS::Partition
+            - ":iam::"
+            - Ref: AWS::AccountId
+            - :role/aws-service-role/ecs.application-autoscaling.amazonaws.com/AWSServiceRoleForApplicationAutoScaling_ECSService
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsFargateService/TaskCount/Target/Resource
+  ecsFargateServiceTaskCountTargetEcsCpuScaling4E68092A:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: EcsClusterStackecsFargateServiceTaskCountTargetEcsCpuScaling2B2C031C
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId:
+        Ref: ecsFargateServiceTaskCountTargetB6FAE0B3
+      TargetTrackingScalingPolicyConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageCPUUtilization
+        TargetValue: 50
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsFargateService/TaskCount/Target/EcsCpuScaling/Resource
+  ecsFargateServiceTaskCountTargetEcsMemoryScalingAC4B81D9:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: EcsClusterStackecsFargateServiceTaskCountTargetEcsMemoryScaling53DFBF38
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId:
+        Ref: ecsFargateServiceTaskCountTargetB6FAE0B3
+      TargetTrackingScalingPolicyConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ECSServiceAverageMemoryUtilization
+        TargetValue: 50
+    Metadata:
+      aws:cdk:path: EcsClusterStack/ecsFargateService/TaskCount/Target/EcsMemoryScaling/Resource
+  pipelinecodebuildRoleB99C1971:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/codebuild/Role/Resource
+  pipelinecodebuildRoleDefaultPolicyEDA9D4B4:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: secretsmanager:GetSecretValue
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:"
+                  - Ref: AWS::Partition
+                  - ":secretsmanager:"
+                  - Ref: AWS::Region
+                  - ":"
+                  - Ref: AWS::AccountId
+                  - :secret:-??????
+          - Action: ec2:CreateNetworkInterfacePermission
+            Condition:
+              StringEquals:
+                ec2:Subnet:
+                  - Fn::Join:
+                      - ""
+                      - - "arn:"
+                        - Ref: AWS::Partition
+                        - ":ec2:"
+                        - Ref: AWS::Region
+                        - ":"
+                        - Ref: AWS::AccountId
+                        - :subnet/
+                        - Fn::ImportValue: VpcStack:ExportsOutputRefvpcPrivateSubnet1Subnet934893E8236E2271
+                  - Fn::Join:
+                      - ""
+                      - - "arn:"
+                        - Ref: AWS::Partition
+                        - ":ec2:"
+                        - Ref: AWS::Region
+                        - ":"
+                        - Ref: AWS::AccountId
+                        - :subnet/
+                        - Fn::ImportValue: VpcStack:ExportsOutputRefvpcPrivateSubnet2Subnet7031C2BA60DCB1EE
+                ec2:AuthorizedService: codebuild.amazonaws.com
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:"
+                  - Ref: AWS::Partition
+                  - ":ec2:"
+                  - Ref: AWS::Region
+                  - ":"
+                  - Ref: AWS::AccountId
+                  - :network-interface/*
+          - Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Effect: Allow
+            Resource:
+              - Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":logs:"
+                    - Ref: AWS::Region
+                    - ":"
+                    - Ref: AWS::AccountId
+                    - :log-group:/aws/codebuild/
+                    - Ref: pipelinecodebuild5D39C8AB
+                    - :*
+              - Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":logs:"
+                    - Ref: AWS::Region
+                    - ":"
+                    - Ref: AWS::AccountId
+                    - :log-group:/aws/codebuild/
+                    - Ref: pipelinecodebuild5D39C8AB
+          - Action:
+              - codebuild:BatchPutCodeCoverages
+              - codebuild:BatchPutTestCases
+              - codebuild:CreateReport
+              - codebuild:CreateReportGroup
+              - codebuild:UpdateReport
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - "arn:"
+                  - Ref: AWS::Partition
+                  - ":codebuild:"
+                  - Ref: AWS::Region
+                  - ":"
+                  - Ref: AWS::AccountId
+                  - :report-group/
+                  - Ref: pipelinecodebuild5D39C8AB
+                  - -*
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject*
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - pipelineArtifactsBucketE556FD2D
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - pipelineArtifactsBucketE556FD2D
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - pipelineArtifactsBucketEncryptionKeyF7948A60
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: pipelinecodebuildRoleDefaultPolicyEDA9D4B4
+      Roles:
+        - Ref: pipelinecodebuildRoleB99C1971
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/codebuild/Role/DefaultPolicy/Resource
+  pipelinecodebuildSecurityGroupD14689BE:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Automatic generated security group for CodeBuild EcsClusterStackpipelinecodebuild2339B8E8
+      SecurityGroupEgress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow all outbound traffic by default
+          IpProtocol: "-1"
+      VpcId:
+        Fn::ImportValue: VpcStack:ExportsOutputRefvpcA2121C384D1B3CDE
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/codebuild/SecurityGroup/Resource
+  pipelinecodebuild5D39C8AB:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        EnvironmentVariables:
+          - Name: GIT_BRANCH
+            Type: PLAINTEXT
+            Value: ""
+          - Name: GIT_SSH_PEM
+            Type: SECRETS_MANAGER
+            Value: ""
+        Image: aws/codebuild/standard:5.0
+        ImagePullCredentialsType: CODEBUILD
+        PrivilegedMode: true
+        Type: LINUX_CONTAINER
+      ServiceRole:
+        Fn::GetAtt:
+          - pipelinecodebuildRoleB99C1971
+          - Arn
+      Source:
+        BuildSpec: |-
+          {
+            "version": "0.2",
+            "phases": {
+              "build": {
+                "commands": [
+                  "echo \"hello\""
+                ]
+              }
+            }
+          }
+        Type: NO_SOURCE
+      Cache:
+        Type: NO_CACHE
+      EncryptionKey:
+        Fn::GetAtt:
+          - pipelineArtifactsBucketEncryptionKeyF7948A60
+          - Arn
+      VpcConfig:
+        SecurityGroupIds:
+          - Fn::GetAtt:
+              - pipelinecodebuildSecurityGroupD14689BE
+              - GroupId
+        Subnets:
+          - Fn::ImportValue: VpcStack:ExportsOutputRefvpcPrivateSubnet1Subnet934893E8236E2271
+          - Fn::ImportValue: VpcStack:ExportsOutputRefvpcPrivateSubnet2Subnet7031C2BA60DCB1EE
+        VpcId:
+          Fn::ImportValue: VpcStack:ExportsOutputRefvpcA2121C384D1B3CDE
+    DependsOn:
+      - pipelinecodebuildPolicyDocumentACCE15B2
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/codebuild/Resource
+  pipelinecodebuildPolicyDocumentACCE15B2:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ec2:CreateNetworkInterface
+              - ec2:DeleteNetworkInterface
+              - ec2:DescribeDhcpOptions
+              - ec2:DescribeNetworkInterfaces
+              - ec2:DescribeSecurityGroups
+              - ec2:DescribeSubnets
+              - ec2:DescribeVpcs
+            Effect: Allow
+            Resource: "*"
+        Version: "2012-10-17"
+      PolicyName: pipelinecodebuildPolicyDocumentACCE15B2
+      Roles:
+        - Ref: pipelinecodebuildRoleB99C1971
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/codebuild/PolicyDocument/Resource
+  pipelineArtifactsBucketEncryptionKeyF7948A60:
+    Type: AWS::KMS::Key
+    Properties:
+      KeyPolicy:
+        Statement:
+          - Action:
+              - kms:CancelKeyDeletion
+              - kms:Create*
+              - kms:Delete*
+              - kms:Describe*
+              - kms:Disable*
+              - kms:Enable*
+              - kms:GenerateDataKey
+              - kms:Get*
+              - kms:List*
+              - kms:Put*
+              - kms:Revoke*
+              - kms:ScheduleKeyDeletion
+              - kms:TagResource
+              - kms:UntagResource
+              - kms:Update*
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":iam::"
+                    - Ref: AWS::AccountId
+                    - :root
+            Resource: "*"
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Principal:
+              AWS:
+                - Fn::GetAtt:
+                    - pipelineRole72A38F7D
+                    - Arn
+                - Fn::GetAtt:
+                    - pipelinecodebuildRoleB99C1971
+                    - Arn
+                - Fn::GetAtt:
+                    - pipelinesourceCodePipelineActionRoleE093B733
+                    - Arn
+            Resource: "*"
+          - Action:
+              - kms:Decrypt
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - pipelinecodebuildRoleB99C1971
+                  - Arn
+            Resource: "*"
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::GetAtt:
+                  - pipelinedeployCodePipelineActionRole081A1F42
+                  - Arn
+            Resource: "*"
+        Version: "2012-10-17"
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/ArtifactsBucketEncryptionKey/Resource
+  pipelineArtifactsBucketEncryptionKeyAlias998382BA:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/codepipeline-ecsclusterstackpipeline0190ccc6
+      TargetKeyId:
+        Fn::GetAtt:
+          - pipelineArtifactsBucketEncryptionKeyF7948A60
+          - Arn
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/ArtifactsBucketEncryptionKeyAlias/Resource
+  pipelineArtifactsBucketE556FD2D:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              KMSMasterKeyID:
+                Fn::GetAtt:
+                  - pipelineArtifactsBucketEncryptionKeyF7948A60
+                  - Arn
+              SSEAlgorithm: aws:kms
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/ArtifactsBucket/Resource
+  pipelineArtifactsBucketPolicy95AABAFA:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: pipelineArtifactsBucketE556FD2D
+      PolicyDocument:
+        Statement:
+          - Action: s3:*
+            Condition:
+              Bool:
+                aws:SecureTransport: "false"
+            Effect: Deny
+            Principal:
+              AWS: "*"
+            Resource:
+              - Fn::GetAtt:
+                  - pipelineArtifactsBucketE556FD2D
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - pipelineArtifactsBucketE556FD2D
+                        - Arn
+                    - /*
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/ArtifactsBucket/Policy/Resource
+  pipelineRole72A38F7D:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/Role/Resource
+  pipelineRoleDefaultPolicyC73BED28:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject*
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - pipelineArtifactsBucketE556FD2D
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - pipelineArtifactsBucketE556FD2D
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - pipelineArtifactsBucketEncryptionKeyF7948A60
+                - Arn
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - pipelinebuildCodePipelineActionRole5AD22095
+                  - Arn
+              - Fn::GetAtt:
+                  - pipelinedeployCodePipelineActionRole081A1F42
+                  - Arn
+              - Fn::GetAtt:
+                  - pipelinesourceCodePipelineActionRoleE093B733
+                  - Arn
+        Version: "2012-10-17"
+      PolicyName: pipelineRoleDefaultPolicyC73BED28
+      Roles:
+        - Ref: pipelineRole72A38F7D
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/Role/DefaultPolicy/Resource
+  pipeline1C53A02C:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      RoleArn:
+        Fn::GetAtt:
+          - pipelineRole72A38F7D
+          - Arn
+      Stages:
+        - Actions:
+            - ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: "1"
+              Configuration:
+                ConnectionArn: ""
+                FullRepositoryId: medmoinc/
+                BranchName: master
+              Name: source
+              OutputArtifacts:
+                - Name: Artifact_source_source
+              RoleArn:
+                Fn::GetAtt:
+                  - pipelinesourceCodePipelineActionRoleE093B733
+                  - Arn
+              RunOrder: 1
+          Name: source
+        - Actions:
+            - ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: "1"
+              Configuration:
+                ProjectName:
+                  Ref: pipelinecodebuild5D39C8AB
+              InputArtifacts:
+                - Name: Artifact_source_source
+              Name: build
+              OutputArtifacts:
+                - Name: Artifact_build_build
+              RoleArn:
+                Fn::GetAtt:
+                  - pipelinebuildCodePipelineActionRole5AD22095
+                  - Arn
+              RunOrder: 1
+          Name: build
+        - Actions:
+            - ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: ECS
+                Version: "1"
+              Configuration:
+                ClusterName:
+                  Ref: ecsCluster15812518
+                ServiceName:
+                  Fn::GetAtt:
+                    - ecsFargateService9045BECE
+                    - Name
+              InputArtifacts:
+                - Name: Artifact_build_build
+              Name: deploy
+              RoleArn:
+                Fn::GetAtt:
+                  - pipelinedeployCodePipelineActionRole081A1F42
+                  - Arn
+              RunOrder: 1
+          Name: deploy
+      ArtifactStore:
+        EncryptionKey:
+          Id:
+            Fn::GetAtt:
+              - pipelineArtifactsBucketEncryptionKeyF7948A60
+              - Arn
+          Type: KMS
+        Location:
+          Ref: pipelineArtifactsBucketE556FD2D
+        Type: S3
+    DependsOn:
+      - pipelineRoleDefaultPolicyC73BED28
+      - pipelineRole72A38F7D
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/Resource
+  pipelinesourceCodePipelineActionRoleE093B733:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":iam::"
+                    - Ref: AWS::AccountId
+                    - :root
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/source/source/CodePipelineActionRole/Resource
+  pipelinesourceCodePipelineActionRoleDefaultPolicyC71CEB81:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action: codestar-connections:UseConnection
+            Effect: Allow
+            Resource: ""
+          - Action:
+              - s3:Abort*
+              - s3:DeleteObject*
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+              - s3:PutObject*
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - pipelineArtifactsBucketE556FD2D
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - pipelineArtifactsBucketE556FD2D
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:Encrypt
+              - kms:GenerateDataKey*
+              - kms:ReEncrypt*
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - pipelineArtifactsBucketEncryptionKeyF7948A60
+                - Arn
+          - Action:
+              - s3:PutObjectAcl
+              - s3:PutObjectVersionAcl
+            Effect: Allow
+            Resource:
+              Fn::Join:
+                - ""
+                - - Fn::GetAtt:
+                      - pipelineArtifactsBucketE556FD2D
+                      - Arn
+                  - /*
+        Version: "2012-10-17"
+      PolicyName: pipelinesourceCodePipelineActionRoleDefaultPolicyC71CEB81
+      Roles:
+        - Ref: pipelinesourceCodePipelineActionRoleE093B733
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/source/source/CodePipelineActionRole/DefaultPolicy/Resource
+  pipelinebuildCodePipelineActionRole5AD22095:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":iam::"
+                    - Ref: AWS::AccountId
+                    - :root
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/build/build/CodePipelineActionRole/Resource
+  pipelinebuildCodePipelineActionRoleDefaultPolicy0163F34B:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - codebuild:BatchGetBuilds
+              - codebuild:StartBuild
+              - codebuild:StopBuild
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - pipelinecodebuild5D39C8AB
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: pipelinebuildCodePipelineActionRoleDefaultPolicy0163F34B
+      Roles:
+        - Ref: pipelinebuildCodePipelineActionRole5AD22095
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/build/build/CodePipelineActionRole/DefaultPolicy/Resource
+  pipelinedeployCodePipelineActionRole081A1F42:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              AWS:
+                Fn::Join:
+                  - ""
+                  - - "arn:"
+                    - Ref: AWS::Partition
+                    - ":iam::"
+                    - Ref: AWS::AccountId
+                    - :root
+        Version: "2012-10-17"
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/deploy/deploy/CodePipelineActionRole/Resource
+  pipelinedeployCodePipelineActionRoleDefaultPolicyB40742B5:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Statement:
+          - Action:
+              - ecs:DescribeServices
+              - ecs:DescribeTaskDefinition
+              - ecs:DescribeTasks
+              - ecs:ListTasks
+              - ecs:RegisterTaskDefinition
+              - ecs:UpdateService
+            Effect: Allow
+            Resource: "*"
+          - Action: iam:PassRole
+            Condition:
+              StringEqualsIfExists:
+                iam:PassedToService:
+                  - ec2.amazonaws.com
+                  - ecs-tasks.amazonaws.com
+            Effect: Allow
+            Resource: "*"
+          - Action:
+              - s3:GetBucket*
+              - s3:GetObject*
+              - s3:List*
+            Effect: Allow
+            Resource:
+              - Fn::GetAtt:
+                  - pipelineArtifactsBucketE556FD2D
+                  - Arn
+              - Fn::Join:
+                  - ""
+                  - - Fn::GetAtt:
+                        - pipelineArtifactsBucketE556FD2D
+                        - Arn
+                    - /*
+          - Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+            Effect: Allow
+            Resource:
+              Fn::GetAtt:
+                - pipelineArtifactsBucketEncryptionKeyF7948A60
+                - Arn
+        Version: "2012-10-17"
+      PolicyName: pipelinedeployCodePipelineActionRoleDefaultPolicyB40742B5
+      Roles:
+        - Ref: pipelinedeployCodePipelineActionRole081A1F42
+    Metadata:
+      aws:cdk:path: EcsClusterStack/pipeline/pipeline/deploy/deploy/CodePipelineActionRole/DefaultPolicy/Resource
+  medmocards4DF08C1C:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-cards-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: EcsClusterStack/medmo-cards/Resource
+  medmocxtask705ADB8E:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-cx-task-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: EcsClusterStack/medmo-cx-task/Resource
+  medmomfplogos8834616A:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-mfp-logos-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: EcsClusterStack/medmo-mfp-logos/Resource
+  medmorequestsnotesA40DBEB8:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-requests-notes-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: EcsClusterStack/medmo-requests-notes/Resource
+  medmorequestsrx60B44C0F:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-requests-rx-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: EcsClusterStack/medmo-requests-rx/Resource
+  medmoscanreports74753175:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-scan-reports-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: EcsClusterStack/medmo-scan-reports/Resource
+  medmotasksE526B92C:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: medmo-tasks-1234567
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - "*"
+            AllowedMethods:
+              - HEAD
+              - GET
+              - PUT
+              - POST
+            AllowedOrigins:
+              - "*.medmo.com, *.medmo.io"
+            ExposedHeaders:
+              - x-amz-server-side-encryption
+              - x-amz-meta-originalname
+              - x-amz-request-id
+              - x-amz-version-id
+              - x-amz-id-2
+            MaxAge: 3200
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Metadata:
+      aws:cdk:path: EcsClusterStack/medmo-tasks/Resource
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/31R207DMAz9lr2HjAKCV6BchOBhWvcDWeZVXru4cpKhqcq/kybdDSSefHLsYx87hSzuC3k9eVTf9kqvmmmviUH2lVO6ESUZ69hrJ+ZgybMGUa7NOY4VK3RIJoihQw+aZT+Hjiw64n0uP7yCAG1lX7beOuAkH+Gb4lo5WCjbvMAaTWo5FPxmyDiFBviMG7UV8A6zqQOstGrVsk1tS/LGBYFqG/1RmxcZ4oxa1MloRkG0VEeXX1S/M/luyBzwsMBNPA5oz+j2x/z/xIepGaz9w78mOh6u6+JgNSyjvCMbXaOp45ijfa7BJfklk8OC41dFQZV1p30uiCA0rWDpsV3Jfsa0AZ1ajjCnO+wgSuL/z0aUSkYcRLONh/mE1H0ITy2qtFcCQdhb2T973WS3I8rhZOv8HUIQJg6WGzvdFXeyeJDFZGMRrzh+F25BznP8AaVSNIeoAgAA
+    Metadata:
+      aws:cdk:path: EcsClusterStack/CDKMetadata/Default
+    Condition: CDKMetadataAvailable
+Conditions:
+  CDKMetadataAvailable:
+    Fn::Or:
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - af-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ca-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-northwest-1
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-3
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - me-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - sa-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-2
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-2
+

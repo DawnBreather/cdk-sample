@@ -1,0 +1,447 @@
+Resources:
+  vpcA2121C38:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: VpcStack/vpc
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/Resource
+  vpcPublicSubnet1Subnet2E65531E:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: vpcA2121C38
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.0.0/18
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: Public
+        - Key: aws-cdk:subnet-type
+          Value: Public
+        - Key: Name
+          Value: VpcStack/vpc/PublicSubnet1
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PublicSubnet1/Subnet
+  vpcPublicSubnet1RouteTable48A2DF9B:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: vpcA2121C38
+      Tags:
+        - Key: Name
+          Value: VpcStack/vpc/PublicSubnet1
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PublicSubnet1/RouteTable
+  vpcPublicSubnet1RouteTableAssociation5D3F4579:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: vpcPublicSubnet1RouteTable48A2DF9B
+      SubnetId:
+        Ref: vpcPublicSubnet1Subnet2E65531E
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PublicSubnet1/RouteTableAssociation
+  vpcPublicSubnet1DefaultRoute10708846:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: vpcPublicSubnet1RouteTable48A2DF9B
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: vpcIGWE57CBDCA
+    DependsOn:
+      - vpcVPCGW7984C166
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PublicSubnet1/DefaultRoute
+  vpcPublicSubnet1EIPDA49DCBE:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      Tags:
+        - Key: Name
+          Value: VpcStack/vpc/PublicSubnet1
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PublicSubnet1/EIP
+  vpcPublicSubnet1NATGateway9C16659E:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId:
+        Ref: vpcPublicSubnet1Subnet2E65531E
+      AllocationId:
+        Fn::GetAtt:
+          - vpcPublicSubnet1EIPDA49DCBE
+          - AllocationId
+      Tags:
+        - Key: Name
+          Value: VpcStack/vpc/PublicSubnet1
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PublicSubnet1/NATGateway
+  vpcPublicSubnet2Subnet009B674F:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: vpcA2121C38
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.64.0/18
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: Public
+        - Key: aws-cdk:subnet-type
+          Value: Public
+        - Key: Name
+          Value: VpcStack/vpc/PublicSubnet2
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PublicSubnet2/Subnet
+  vpcPublicSubnet2RouteTableEB40D4CB:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: vpcA2121C38
+      Tags:
+        - Key: Name
+          Value: VpcStack/vpc/PublicSubnet2
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PublicSubnet2/RouteTable
+  vpcPublicSubnet2RouteTableAssociation21F81B59:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: vpcPublicSubnet2RouteTableEB40D4CB
+      SubnetId:
+        Ref: vpcPublicSubnet2Subnet009B674F
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PublicSubnet2/RouteTableAssociation
+  vpcPublicSubnet2DefaultRouteA1EC0F60:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: vpcPublicSubnet2RouteTableEB40D4CB
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId:
+        Ref: vpcIGWE57CBDCA
+    DependsOn:
+      - vpcVPCGW7984C166
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PublicSubnet2/DefaultRoute
+  vpcPrivateSubnet1Subnet934893E8:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: vpcA2121C38
+      AvailabilityZone:
+        Fn::Select:
+          - 0
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.128.0/18
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: Private
+        - Key: aws-cdk:subnet-type
+          Value: Private
+        - Key: Name
+          Value: VpcStack/vpc/PrivateSubnet1
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PrivateSubnet1/Subnet
+  vpcPrivateSubnet1RouteTableB41A48CC:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: vpcA2121C38
+      Tags:
+        - Key: Name
+          Value: VpcStack/vpc/PrivateSubnet1
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PrivateSubnet1/RouteTable
+  vpcPrivateSubnet1RouteTableAssociation67945127:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: vpcPrivateSubnet1RouteTableB41A48CC
+      SubnetId:
+        Ref: vpcPrivateSubnet1Subnet934893E8
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PrivateSubnet1/RouteTableAssociation
+  vpcPrivateSubnet1DefaultRoute1AA8E2E5:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: vpcPrivateSubnet1RouteTableB41A48CC
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: vpcPublicSubnet1NATGateway9C16659E
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PrivateSubnet1/DefaultRoute
+  vpcPrivateSubnet2Subnet7031C2BA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId:
+        Ref: vpcA2121C38
+      AvailabilityZone:
+        Fn::Select:
+          - 1
+          - Fn::GetAZs: ""
+      CidrBlock: 10.0.192.0/18
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: aws-cdk:subnet-name
+          Value: Private
+        - Key: aws-cdk:subnet-type
+          Value: Private
+        - Key: Name
+          Value: VpcStack/vpc/PrivateSubnet2
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PrivateSubnet2/Subnet
+  vpcPrivateSubnet2RouteTable7280F23E:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId:
+        Ref: vpcA2121C38
+      Tags:
+        - Key: Name
+          Value: VpcStack/vpc/PrivateSubnet2
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PrivateSubnet2/RouteTable
+  vpcPrivateSubnet2RouteTableAssociation007E94D3:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId:
+        Ref: vpcPrivateSubnet2RouteTable7280F23E
+      SubnetId:
+        Ref: vpcPrivateSubnet2Subnet7031C2BA
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PrivateSubnet2/RouteTableAssociation
+  vpcPrivateSubnet2DefaultRouteB0E07F99:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId:
+        Ref: vpcPrivateSubnet2RouteTable7280F23E
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId:
+        Ref: vpcPublicSubnet1NATGateway9C16659E
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/PrivateSubnet2/DefaultRoute
+  vpcIGWE57CBDCA:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: VpcStack/vpc
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/IGW
+  vpcVPCGW7984C166:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId:
+        Ref: vpcA2121C38
+      InternetGatewayId:
+        Ref: vpcIGWE57CBDCA
+    Metadata:
+      aws:cdk:path: VpcStack/vpc/VPCGW
+  alb8A8B13C2:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      LoadBalancerAttributes:
+        - Key: deletion_protection.enabled
+          Value: "false"
+      Scheme: internet-facing
+      SecurityGroups:
+        - Fn::GetAtt:
+            - albSecurityGroup49866104
+            - GroupId
+      Subnets:
+        - Ref: vpcPublicSubnet1Subnet2E65531E
+        - Ref: vpcPublicSubnet2Subnet009B674F
+      Type: application
+    DependsOn:
+      - vpcPublicSubnet1DefaultRoute10708846
+      - vpcPublicSubnet2DefaultRouteA1EC0F60
+    Metadata:
+      aws:cdk:path: VpcStack/alb/Resource
+  albSecurityGroup49866104:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Automatically created Security Group for ELB VpcStackalbF2353CC6
+      SecurityGroupIngress:
+        - CidrIp: 0.0.0.0/0
+          Description: Allow from anyone on port 80
+          FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+      VpcId:
+        Ref: vpcA2121C38
+    Metadata:
+      aws:cdk:path: VpcStack/alb/SecurityGroup/Resource
+  albalbListenerCCDDDDBE:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+        - FixedResponseConfig:
+            MessageBody: This is the ALB Default Action
+            StatusCode: "200"
+          Type: fixed-response
+      LoadBalancerArn:
+        Ref: alb8A8B13C2
+      Port: 80
+      Protocol: HTTP
+    Metadata:
+      aws:cdk:path: VpcStack/alb/albListener/Resource
+  albalbListeneralbTargetGroupGroup10D51A31:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 60
+      HealthCheckPath: /health
+      HealthCheckTimeoutSeconds: 5
+      Name: api
+      Port: 80
+      Protocol: HTTP
+      TargetGroupAttributes:
+        - Key: stickiness.enabled
+          Value: "false"
+      TargetType: ip
+      VpcId:
+        Ref: vpcA2121C38
+    Metadata:
+      aws:cdk:path: VpcStack/alb/albListener/albTargetGroupGroup/Resource
+  albalbListeneralbTargetGroupRule0C24BC53:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+        - TargetGroupArn:
+            Ref: albalbListeneralbTargetGroupGroup10D51A31
+          Type: forward
+      Conditions:
+        - Field: host-header
+          HostHeaderConfig:
+            Values:
+              - api.medmo.com
+        - Field: path-pattern
+          PathPatternConfig:
+            Values:
+              - /
+      ListenerArn:
+        Ref: albalbListenerCCDDDDBE
+      Priority: 1
+    Metadata:
+      aws:cdk:path: VpcStack/alb/albListener/albTargetGroupRule/Resource
+  CDKMetadata:
+    Type: AWS::CDK::Metadata
+    Properties:
+      Analytics: v2:deflate64:H4sIAAAAAAAA/21QXWuDMBT9LX1P0znG9jonoxTGEC19v8a7Lq1NJLmxFPG/L9E6M9hTzheHc5Pw5DnhD6tXuNq1qM+bXmiDvC8JxJllWlkyThAr0GpnBLLsS8XYJ2pJUquBhYYexSPvD60I3iHPWO6qRorSVQopaAsqtCPcQ9Xgoi9aaq0WEkLzbziA910enk+gLRBe4cZyIzsPl+KdIjQez4FpyZ2l5A/7vqAiVqJwRtJta7Rrxw2xMDBswJIUjYa6ggaUkOrY+evStvUnjdM+vPc2emhCwx8e56QlVPfMjCN/D+boB89DYvpPS+GmP4v5MAxM6Rr5yW665IknLzxZnayUa+MUyQvyYnp/ABYCKz3xAQAA
+    Metadata:
+      aws:cdk:path: VpcStack/CDKMetadata/Default
+    Condition: CDKMetadataAvailable
+Conditions:
+  CDKMetadataAvailable:
+    Fn::Or:
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - af-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-northeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ap-southeast-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - ca-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - cn-northwest-1
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-central-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-north-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-2
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - eu-west-3
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - me-south-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - sa-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-east-2
+      - Fn::Or:
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-1
+          - Fn::Equals:
+              - Ref: AWS::Region
+              - us-west-2
+Outputs:
+  ExportsOutputRefalbalbListeneralbTargetGroupGroup10D51A311ADE4F55:
+    Value:
+      Ref: albalbListeneralbTargetGroupGroup10D51A31
+    Export:
+      Name: VpcStack:ExportsOutputRefalbalbListeneralbTargetGroupGroup10D51A311ADE4F55
+  ExportsOutputRefvpcPrivateSubnet1Subnet934893E8236E2271:
+    Value:
+      Ref: vpcPrivateSubnet1Subnet934893E8
+    Export:
+      Name: VpcStack:ExportsOutputRefvpcPrivateSubnet1Subnet934893E8236E2271
+  ExportsOutputRefvpcPrivateSubnet2Subnet7031C2BA60DCB1EE:
+    Value:
+      Ref: vpcPrivateSubnet2Subnet7031C2BA
+    Export:
+      Name: VpcStack:ExportsOutputRefvpcPrivateSubnet2Subnet7031C2BA60DCB1EE
+  ExportsOutputRefvpcA2121C384D1B3CDE:
+    Value:
+      Ref: vpcA2121C38
+    Export:
+      Name: VpcStack:ExportsOutputRefvpcA2121C384D1B3CDE
+  ExportsOutputFnGetAttalbSecurityGroup49866104GroupIdD5B19856:
+    Value:
+      Fn::GetAtt:
+        - albSecurityGroup49866104
+        - GroupId
+    Export:
+      Name: VpcStack:ExportsOutputFnGetAttalbSecurityGroup49866104GroupIdD5B19856
+
